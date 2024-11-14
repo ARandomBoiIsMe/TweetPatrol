@@ -1,0 +1,134 @@
+body {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 16px;
+    background-color: #15202b;
+    color: #fff;
+    width: 300px;
+}
+
+.tab {
+    display: none;
+    padding: 16px 0;
+}
+
+.tab.active {
+    display: block;
+}
+
+.tab-buttons {
+    display: flex;
+    background-color: #192734;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.tab-buttons button {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+    border-radius: 4px;
+    margin: 0 4px;
+    font-size: 14px;
+    color: #8899a6;
+    transition: all 0.2s ease;
+}
+
+.tab-buttons button.active {
+    background-color: #1da1f2;
+    color: white;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #253341;
+}
+
+.toggle-switch:last-child {
+    border-bottom: none;
+}
+
+.toggle-switch span {
+    color: #fff;
+    font-size: 14px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #253341;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: #1da1f2;
+}
+
+input:checked+.slider:before {
+    transform: translateX(20px);
+}
+
+#view-dashboard {
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.2s ease;
+}
+
+#view-dashboard:hover {
+    background-color: #1991db;
+}
+
+h2 {
+    font-size: 18px;
+    margin: 0 0 16px 0;
+    color: #fff;
+}
+
+p {
+    color: #8899a6;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0 0 16px 0;
+}
