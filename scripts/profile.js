@@ -1,12 +1,12 @@
 async function loadTimeline() {
     let timeline = null
     let attempts = 0
-    let maxAttempts = 10
+    let maxAttempts = 50
 
     while (timeline === null && attempts < maxAttempts) {
-        await new Promise(r => setTimeout(r, 3000))
         timeline = document.querySelector('[aria-label^="Timeline:"] > div')
         attempts++
+        await new Promise(r => setTimeout(r, 200))
     }
 
     if (timeline === null) { throw new Error(`Timeline not found - Profile timeline`) }
@@ -16,8 +16,11 @@ async function loadTimeline() {
 
 loadTimeline().then(async timeline => {
     console.log("Profile timeline loaded");
-    await initialTimelineRead(timeline);
-    monitorTimeline(timeline);
+
+    const isCreator = await isUserACreator()
+
+    await initialTimelineRead(timeline, isCreator);
+    monitorTimeline(timeline, isCreator);
 }).catch(error => {
     console.error("Error loading timeline:", error);
 });

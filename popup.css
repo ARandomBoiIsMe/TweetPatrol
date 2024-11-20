@@ -7,6 +7,20 @@ body {
     width: 300px;
 }
 
+h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: #1da1f2;
+}
+
+.settings-section {
+    background: rgba(25, 39, 52, 0.6);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
 .tab {
     display: none;
     padding: 16px 0;
@@ -38,7 +52,7 @@ body {
 }
 
 .tab-buttons button.active {
-    background-color: #1da1f2;
+    background: linear-gradient(45deg, #1da1f2, #45b3e0);
     color: white;
 }
 
@@ -47,23 +61,31 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 12px 0;
-    border-bottom: 1px solid #253341;
 }
 
-.toggle-switch:last-child {
-    border-bottom: none;
+.toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.toggle-switch span {
+.toggle-label {
     color: #fff;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.toggle-description {
+    color: #8899a6;
+    font-size: 13px;
 }
 
 .switch {
     position: relative;
     display: inline-block;
-    width: 44px;
-    height: 24px;
+    width: 48px;
+    height: 28px;
+    flex-shrink: 0;
 }
 
 .switch input {
@@ -79,9 +101,9 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #253341;
+    background-color: rgba(255, 255, 255, 0.1);
     transition: .4s;
-    border-radius: 24px;
+    border-radius: 28px;
 }
 
 .slider:before {
@@ -89,15 +111,15 @@ body {
     content: "";
     height: 20px;
     width: 20px;
-    left: 2px;
-    bottom: 2px;
+    left: 4px;
+    bottom: 4px;
     background-color: white;
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked+.slider {
-    background-color: #1da1f2;
+    background: linear-gradient(45deg, #1da1f2, #45b3e0);
 }
 
 input:checked+.slider:before {
@@ -105,30 +127,50 @@ input:checked+.slider:before {
 }
 
 #view-dashboard {
-    background-color: #1da1f2;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 14px;
-    cursor: pointer;
     width: 100%;
-    transition: background-color 0.2s ease;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #1da1f2, #45b3e0);
+    color: white;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 #view-dashboard:hover {
-    background-color: #1991db;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 161, 242, 0.2);
 }
 
-h2 {
-    font-size: 18px;
-    margin: 0 0 16px 0;
-    color: #fff;
+#view-dashboard:active {
+    transform: translateY(0);
 }
 
-p {
-    color: #8899a6;
-    font-size: 14px;
-    line-height: 1.4;
-    margin: 0 0 16px 0;
+.button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .settings-section {
+        padding: 20px;
+    }
+
+    .toggle-switch {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .switch {
+        align-self: flex-start;
+    }
 }

@@ -1,19 +1,65 @@
-var baseURL = "http://localhost:8080/"
+// ====================================
+// https://stackoverflow.com/a/42377997
+chrome.runtime.onMessage.addListener(function (msg, _, sendResponse) {
+    if (msg.text === 'are_you_there_content_script?') {
+        sendResponse({ status: "yes" });
+    }
+});
+// ====================================
 
-async function loadTimeline(timelineLabel) {
-    let timeline = null
-    let attempts = 0
-    let maxAttempts = 10
+const CONFIG = {
+    baseURL: "http://localhost:8080/",
+    maxTimelineLoadAttempts: 50,
+    timelineLoadInterval: 200,
+    imageLoadTimeout: 5000
+};
 
-    while (timeline === null && attempts < maxAttempts) {
-        await new Promise(r => setTimeout(r, 3000))
-        timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`)
-        attempts++
+async function isUserACreator() {
+    const profile = document.querySelector('a[aria-label="Profile"]');
+    if (!profile) return false;
+
+    const user = profile.href.replace('https://x.com/', '');
+    const url = `${CONFIG.baseURL}creator/check/${user}`;
+
+    const { Current_X_User } = await chrome.storage.local.get(["Current_X_User"]);
+    if (Current_X_User !== undefined && Current_X_User === user) {
+        console.log("User is an active creator")
+        return true
     }
 
-    if (timeline === null) { throw new Error(`Timeline not found - ${timelineLabel}`) }
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-    return timeline
+        if (data.exists) {
+            await chrome.storage.local.set({ Current_X_User: user });
+            console.log(`Current creator is set: ${user}`);
+            return true;
+        }
+
+        console.log("Current user is not a creator");
+        return false;
+    } catch (error) {
+        console.error("Error checking user:", error);
+        return false;
+    }
+}
+
+async function loadTimeline(timelineLabel) {
+    let timeline = null;
+    let attempts = 0;
+
+    while (!timeline && attempts < CONFIG.maxTimelineLoadAttempts) {
+        timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`);
+        attempts++;
+        await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
+    }
+
+    if (!timeline) {
+        throw new Error(`Timeline not found - ${timelineLabel}`);
+    }
+
+    return timeline;
 }
 
 function getTweetImages(tweet) {
@@ -36,7 +82,7 @@ function getTweetImages(tweet) {
             setTimeout(() => {
                 observer.disconnect();
                 resolve(tweetImages);
-            }, 5000);
+            }, CONFIG.imageLoadTimeout);
         } else {
             images.forEach(image => tweetImages.push(image.src));
             resolve(tweetImages);
@@ -45,207 +91,306 @@ function getTweetImages(tweet) {
 }
 
 async function getQuotePostDetails(quotePost) {
-    const posterTagElement = quotePost.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div > div > div> span')
-    if (posterTagElement === null) { return }
-    const poster = posterTagElement.textContent.replace("@", "https://x.com/")
+    const posterTagElement = quotePost.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div > div > div> span');
+    if (!posterTagElement) return null;
 
-    const tweetLinkElement = quotePost.querySelector('a[role="link"]')
-    if (tweetLinkElement === null) { return }
-    const tweetLink = tweetLinkElement.href.replace(/\/photo\/\d+/g, '')
+    const tweetLinkElement = quotePost.querySelector('a[role="link"]');
+    if (!tweetLinkElement) return null;
 
-    const tweetTimeElement = quotePost.querySelector('time')
-    const tweetTime = tweetTimeElement.getAttribute('datetime')
+    const tweetTimeElement = quotePost.querySelector('time');
+    if (!tweetTimeElement) return null;
 
-    const tweetImages = await getTweetImages(quotePost)
-
-    const output = {
-        poster: poster,
-        link: tweetLink,
-        time: tweetTime,
-        images: tweetImages
-    }
-
-    return output
+    return {
+        poster: posterTagElement.textContent.replace("@", "https://x.com/"),
+        link: tweetLinkElement.href.replace(/\/photo\/\d+/g, ''),
+        time: tweetTimeElement.getAttribute('datetime'),
+        images: await getTweetImages(quotePost)
+    };
 }
 
 async function getTweetDetails(tweet) {
-    const posterTagElement = tweet.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div > a')
-    if (posterTagElement === null) { return }
-    const poster = posterTagElement.href
+    const posterTagElement = tweet.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div > a');
+    if (!posterTagElement) return null;
 
-    const tweetLinkElement = tweet.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div:nth-child(3) > a')
-    if (tweetLinkElement === null) { return }
-    const tweetLink = tweetLinkElement.href
+    const tweetLinkElement = tweet.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div:nth-child(3) > a');
+    if (!tweetLinkElement) return null;
 
-    const tweetTimeElement = tweetLinkElement.querySelector('time')
-    const tweetTime = tweetTimeElement.getAttribute('datetime')
+    const tweetTimeElement = tweetLinkElement.querySelector('time');
+    if (!tweetTimeElement) return null;
 
-    var tweetImages = await getTweetImages(tweet)
-    var quotePost = undefined
+    let tweetImages = await getTweetImages(tweet);
+    let quotePost = null;
 
-    const quotePostElement = tweet.querySelector("div[aria-labelledby] > div[id]")
+    const quotePostElement = tweet.querySelector("div[aria-labelledby] > div[id]");
     if (quotePostElement) {
-        quotePost = await getQuotePostDetails(quotePostElement)
-
-        if (quotePost && quotePost.images) {
-            tweetImages = tweetImages.filter(tweetImage => !quotePost.images.includes(tweetImage))
+        quotePost = await getQuotePostDetails(quotePostElement);
+        if (quotePost?.images) {
+            tweetImages = tweetImages.filter(tweetImage => !quotePost.images.includes(tweetImage));
         }
     }
 
-    const output = {
-        poster: poster,
-        link: tweetLink,
-        time: tweetTime,
+    return {
+        poster: posterTagElement.href,
+        link: tweetLinkElement.href,
+        time: tweetTimeElement.getAttribute('datetime'),
         images: tweetImages,
-        quotePost: quotePost
-    }
-
-    return output
+        quotePost
+    };
 }
 
 function createWarningBanner(result) {
     const warning = document.createElement('div');
     warning.className = 'stolen-tweet-warning';
-    warning.style.backgroundColor = '#f8d7da';
-    warning.style.border = '1px solid #f5c6cb';
-    warning.style.borderRadius = '8px';
-    warning.style.padding = '10px';
-    warning.style.marginBottom = '8px';
-    warning.style.display = 'flex';
-    warning.style.flexDirection = 'column';
-    warning.style.alignItems = 'flex-start';
-    warning.style.fontFamily = 'monospace';
-    warning.style.fontWeight = 'normal';
+    Object.assign(warning.style, {
+        backgroundColor: '#f8d7da',
+        border: '1px solid #f5c6cb',
+        borderRadius: '8px',
+        padding: '10px',
+        marginBottom: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontWeight: 'normal'
+    });
 
-    // Warning text
     const warningText = document.createElement('p');
-    warningText.style.margin = '0 0 8px 0';
-    warningText.style.color = '#721c24';
-    warningText.style.fontSize = '14px';
+    Object.assign(warningText.style, {
+        margin: '0 0 8px 0',
+        color: '#721c24',
+        fontSize: '14px'
+    });
     warningText.textContent = '⚠️ This appears to be a stolen tweet!';
 
-    // Links container
     const linksContainer = document.createElement('div');
     linksContainer.style.display = 'flex';
     linksContainer.style.gap = '10px';
 
-    // Original tweet link
-    const originalLink = document.createElement('a');
-    originalLink.href = result['original_link'];
-    originalLink.target = '_blank';
-    originalLink.style.color = '#1976d2';
-    originalLink.style.textDecoration = 'none';
-    originalLink.style.fontSize = '13px';
-    originalLink.style.fontFamily = 'monospace';
-    originalLink.textContent = 'View original tweet';
-    originalLink.onmouseover = () => originalLink.style.textDecoration = 'underline';
-    originalLink.onmouseout = () => originalLink.style.textDecoration = 'none';
+    const originalLink = createLink(result.original_link, 'View original tweet');
+    const dismissLink = createLink('#', 'No, it\'s not', () => handleDismiss(warning, result));
 
-    // Dismiss link
-    const dismissLink = document.createElement('a');
-    dismissLink.style.color = '#1976d2';
-    dismissLink.style.textDecoration = 'none';
-    dismissLink.style.fontSize = '13px';
-    dismissLink.style.fontFamily = 'monospace';
-    dismissLink.textContent = 'No, it\'s not';
-    dismissLink.onclick = () => handleDismiss(warning, result);
-    dismissLink.onmouseover = () => dismissLink.style.textDecoration = 'underline';
-    dismissLink.onmouseout = () => dismissLink.style.textDecoration = 'none';
-
-    // Append links to the container
-    linksContainer.appendChild(originalLink);
-    linksContainer.appendChild(dismissLink);
-
-    // Append elements to warning container
-    warning.appendChild(warningText);
-    warning.appendChild(linksContainer);
+    linksContainer.append(originalLink, dismissLink);
+    warning.append(warningText, linksContainer);
 
     return warning;
 }
 
+function createLink(href, text, onClick = null) {
+    const link = document.createElement('a');
+    Object.assign(link.style, {
+        color: '#1976d2',
+        textDecoration: 'none',
+        fontSize: '13px',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    });
+
+    link.href = href;
+    link.textContent = text;
+    link.target = '_blank';
+
+    if (onClick) { link.onclick = onClick }
+
+    link.onmouseover = () => link.style.textDecoration = 'underline';
+    link.onmouseout = () => link.style.textDecoration = 'none';
+
+    return link;
+}
+
 function handleDismiss(warning, result) {
-    fetch(`${baseURL}/sus`, { method: 'POST', body: JSON.stringify(result) });
+    fetch(`${CONFIG.baseURL}sus`, {
+        method: 'POST',
+        body: JSON.stringify(result)
+    });
+
     warning.innerHTML = '';
-
-    // Confirmation message
     const confirmationText = document.createElement('p');
+    Object.assign(confirmationText.style, {
+        margin: '0',
+        color: '#721c24',
+        fontSize: '14px',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    });
     confirmationText.textContent = 'Your response has been recorded!';
-    confirmationText.style.margin = '0';
-    confirmationText.style.color = '#721c24'; // Dark red for better readability
-    confirmationText.style.fontSize = '14px';
-    confirmationText.style.fontFamily = 'monospace';
-
     warning.appendChild(confirmationText);
 }
 
-function flagTweets(results) {
-    results
-        .filter((result) => { return result['status'] === 'stolen' })
-        .forEach(result => {
-            const link = document.querySelector(`a[href="${result['stolen_link'].replace('https://x.com', '')}"]`)
-            const tweet = link?.closest('.css-175oi2r[data-testid="cellInnerDiv"]')
+function createAddTweetElement(data) {
+    const addTweetContainer = document.createElement('div');
+    const addTweet = document.createElement('button');
 
-            const isFlagged = tweet.getElementsByClassName("stolen-tweet-warning")
-            if (isFlagged.length !== 0) {
-                return
+    addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1da1f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M12 5l0 14" />
+    <path d="M5 12l14 0" />
+    </svg>`;
+    addTweet.title = 'Add tweet to image library';
+
+    Object.assign(addTweet.style, {
+        cursor: 'pointer',
+        display: 'inline-block',
+        textAlign: 'center',
+        fontSize: '16px',
+        color: '#1da1f2',
+        padding: '5px',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    });
+
+    addTweet.classList.add('add-tweet');
+
+    addTweet.addEventListener('click', async () => {
+        try {
+            const response = await fetch(`${CONFIG.baseURL}creator/content/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M5 12l5 5l10 -10" />
+                </svg>`;
+                addTweet.title = 'Added successfully';
+                addTweet.style.color = '#155724';
+
+                return;
+            } else {
+                console.error('Request failed', await response.text());
+                addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M18 6l-12 12" />
+                <path d="M6 6l12 12" />
+                </svg>`;
+                addTweet.title = 'Failed to add';
+                addTweet.style.color = '#721c24';
             }
-
-            const warning = createWarningBanner(result)
-
-            const beforeTweet = tweet.querySelector('div > div > article > div > div')
-            const beforeTweetChild = beforeTweet.querySelector('div:nth-child(2)')
-
-            beforeTweet.insertBefore(warning, beforeTweetChild)
+        } catch (error) {
+            console.error('An error occurred:', error);
+            addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-exclamation-mark">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 19v.01" />
+            <path d="M12 15v-10" />
+            </svg>`;
+            addTweet.title = 'Something went wrong';
+            addTweet.style.color = '#856404';
         }
-    )
+
+        await new Promise((r) => setTimeout(r, 5000));
+
+        addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1da1f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-plus">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M12 5l0 14" />
+        <path d="M5 12l14 0" />
+        </svg>`;
+        addTweet.title = 'Add tweet to image library';
+        addTweet.style.color = '#1da1f2';
+    });
+
+    addTweetContainer.append(addTweet)
+
+    return addTweetContainer;
 }
 
-async function sendDetails(detailsList) {
-    const resolvedDetails = await Promise.all(detailsList.map(detail => detail instanceof Promise ? detail : Promise.resolve(detail)));
+async function processTweetDetails(detailsList) {
+    const resolvedDetails = await Promise.all(
+        detailsList.map(detail => detail instanceof Promise ? detail : Promise.resolve(detail))
+    );
 
     resolvedDetails.forEach(detail => {
-        if (detail !== undefined && detail.quotePost) {
+        if (detail !== undefined && detail !== null && detail.quotePost) {
             resolvedDetails.push(detail.quotePost);
             delete detail.quotePost;
         }
     })
 
-    const details = resolvedDetails.filter((detail) => { return detail !== undefined && detail.images !== undefined && detail.images.length !== 0 });
+    const details = resolvedDetails.filter((detail) => {
+        return detail !== undefined && detail !== null && detail.images !== undefined && detail.images.length !== 0
+    });
 
-    if (details.length === 0) { return }
-
-    const url = `${baseURL}general/tweet/details`
-    const options = {
-        method: "POST",
-        body: JSON.stringify(details),
-        headers: { "Content-Type": "application/json" }
-    }
-
-    fetch(url, options)
-        .then(response => response.json())
-        .then(data => { flagTweets(data['results']) })
-        .catch(error => {
-            console.error("Error sending details:", error)
-            return
-        }
-    )
+    return details;
 }
 
-function monitorTimeline(timeline) {
-    const callback = function (mutations) {
-        mutations.forEach(mutation => {
-            const detailsList = [...mutation.addedNodes].map(tweet => { return getTweetDetails(tweet) })
+function flagTweets(results) {
+    results
+        .filter(result => result.status === 'stolen')
+        .forEach(result => {
+            const link = document.querySelector(`a[href="${result.stolen_link.replace('https://x.com', '')}"]`);
+            const tweet = link?.closest('.css-175oi2r[data-testid="cellInnerDiv"]');
 
-            sendDetails(detailsList);
-        })
-    }
+            if (!tweet || tweet.querySelector('.stolen-tweet-warning')) return;
 
-    const observer = new MutationObserver(callback)
-    observer.observe(timeline, { childList: true })
+            const warning = createWarningBanner(result);
+            const beforeTweet = tweet.querySelector('div > div > article > div > div');
+            const beforeTweetChild = beforeTweet.querySelector('div:nth-child(2)');
+            beforeTweet.insertBefore(warning, beforeTweetChild);
+        });
 }
 
-async function initialTimelineRead(timeline) {
-    const detailsList = [...timeline.childNodes].map(tweet => { return getTweetDetails(tweet) })
+async function sendDetails(detailsList) {
+    const details = await processTweetDetails(detailsList);
+    if (!details.length) return;
 
-    await sendDetails(detailsList)
+    try {
+        const response = await fetch(`${CONFIG.baseURL}general/tweet/details`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(details)
+        });
+        const data = await response.json();
+        flagTweets(data.results);
+    } catch (error) {
+        console.error("Error sending details:", error);
+    }
+}
+
+async function initialTimelineRead(timeline, isCreator) {
+    const detailsList = await Promise.all(
+        [...timeline.childNodes].map(getTweetDetails)
+    );
+
+    await Promise.all([
+        sendDetails(detailsList),
+        isCreator ? embedCreatorTweets(detailsList) : Promise.resolve()
+    ])
+}
+
+function monitorTimeline(timeline, isCreator) {
+    const observer = new MutationObserver(mutations => {
+        (async () => {
+            for (const mutation of mutations) {
+                const detailsList = await Promise.all(
+                    [...mutation.addedNodes].map(getTweetDetails)
+                );
+
+                await Promise.all([
+                    sendDetails(detailsList),
+                    isCreator ? embedCreatorTweets(detailsList) : Promise.resolve()
+                ])
+            }
+        })().catch(console.error);
+    });
+
+    observer.observe(timeline, { childList: true, subtree: true });
+}
+
+async function embedCreatorTweets(detailsList) {
+    const details = await processTweetDetails(detailsList);
+    if (!details.length) return;
+
+    const { Current_X_User } = await chrome.storage.local.get(["Current_X_User"]);
+
+    details
+        .filter(detail => detail.poster.replace('https://x.com/', '') === Current_X_User)
+        .forEach(detail => {
+            const link = document.querySelector(`a[href="${detail.link.replace('https://x.com', '')}"]`);
+            const tweet = link?.closest('.css-175oi2r[data-testid="cellInnerDiv"]');
+
+            if (!tweet || tweet.querySelector('.add-tweet')) return;
+
+            const addTweet = createAddTweetElement(detail);
+            const statsElement = tweet.querySelector('div > div > article > div > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(4) > div > div > div:nth-child(4)');
+            statsElement.parentNode.insertBefore(addTweet, statsElement.nextSibling);
+        });
 }

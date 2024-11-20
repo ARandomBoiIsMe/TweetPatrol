@@ -1,49 +1,102 @@
+const TWITTER_URL = 'https://x.com';
+const SCRIPT_PATHS = {
+    home: 'scripts/home.js',
+    status: 'scripts/poast.js',
+    search: 'scripts/search.js',
+    profile: 'scripts/profile.js'
+};
+
 chrome.tabs.onUpdated.addListener((_, changeInfo, tab) => {
-    if (tab.active && changeInfo.status === 'complete') {
-        handleTabUrl(tab)
+    if (tab.active && changeInfo.status === 'complete' && tab.url?.startsWith(TWITTER_URL)) {
+        // ====================================
+        // https://stackoverflow.com/a/42377997
+        chrome.tabs.sendMessage(tab.id, { text: "are_you_there_content_script?" }, function (msg) {
+            msg = msg || {};
+
+            if (chrome.runtime.lastError) { }
+            if (msg.status != 'yes') { handleScriptInjection(tab) }
+            else { handleScriptInjectionWithoutUtils(tab) }
+        });
+        // ====================================
     }
-})
+});
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
     chrome.tabs.get(activeInfo.tabId, (tab) => {
-        handleTabUrl(tab)
-    })
-})
+        if (tab.url?.startsWith(TWITTER_URL)) {
+            // ====================================
+            // https://stackoverflow.com/a/42377997
+            chrome.tabs.sendMessage(tab.id, { text: "are_you_there_content_script?" }, function (msg) {
+                msg = msg || {};
 
-async function handleTabUrl(tab) {
-    if (tab.url.startsWith('https://x.com')) {
-        let scriptPath = await determineScriptPath(tab)
-        if (scriptPath) {
-            chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ['utils.js', `scripts/${scriptPath}`]
-            })
+                if (chrome.runtime.lastError) { }
+                if (msg.status != 'yes') { handleScriptInjection(tab) }
+                else { handleScriptInjectionWithoutUtils(tab) }
+            });
+            // ====================================
         }
+    });
+});
+
+async function handleScriptInjection(tab) {
+    try {
+        const path = await determineScriptPath(tab)
+        if (!path) return;
+
+        await injectScript(tab.id, 'utils.js');
+        await injectScript(tab.id, path);
+    } catch (error) {
+        console.error('Script injection error:', error);
+    }
+}
+
+async function handleScriptInjectionWithoutUtils(tab) {
+    try {
+        const path = await determineScriptPath(tab)
+        if (!path) return;
+
+        await injectScript(tab.id, path);
+    } catch (error) {
+        console.error('Script injection error:', error);
+    }
+}
+
+async function injectScript(tabId, scriptPath) {
+    try {
+        await chrome.scripting.executeScript({
+            target: { tabId },
+            files: [scriptPath]
+        });
+    } catch (error) {
+        console.error(`Error injecting ${scriptPath}:`, error);
     }
 }
 
 async function determineScriptPath(tab) {
-    if (tab.url.includes('/home')) return 'home.js'
-    if (tab.url.includes('/status')) return 'poast.js'
-    if (tab.url.includes('/search')) return 'search.js'
+    const scripts = SCRIPT_PATHS;
 
-    const isProfilePage = await waitForTitleMatch(tab, ' (@')
-    if (isProfilePage) return 'profile.js'
+    if (tab.url.includes('/home')) return scripts.home;
+    if (tab.url.includes('/status')) return scripts.status;
+    if (tab.url.includes('/search')) return scripts.search;
 
-    return null
+    const isProfilePage = await waitForTitleMatch(tab, ' (@');
+    if (isProfilePage) return scripts.profile;
+
+    return null;
 }
 
-async function waitForTitleMatch(tab, titleSubstring, maxAttempts = 10, interval = 200) {
-    let attempts = 0
+async function waitForTitleMatch(tab, titleSubstring, maxAttempts = 50, interval = 200) {
+    for (let attempts = 0; attempts < maxAttempts; attempts++) {
+        await new Promise(resolve => setTimeout(resolve, interval));
 
-    while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, interval))
-        const updatedTab = await chrome.tabs.get(tab.id)
-
-        if (updatedTab.title.includes(titleSubstring)) return true
-
-        attempts++
+        try {
+            const updatedTab = await chrome.tabs.get(tab.id);
+            if (updatedTab.title?.includes(titleSubstring)) return true;
+        } catch (error) {
+            console.error('Error checking tab title:', error);
+            return false;
+        }
     }
 
-    return false
+    return false;
 }

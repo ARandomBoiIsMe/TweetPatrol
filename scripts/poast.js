@@ -1,37 +1,47 @@
 async function getPoastDetails(tweet) {
     const posterTagElement = tweet.querySelector('div[data-testid="User-Name"] > div > div > a')
-    if (posterTagElement === null) { return }
-    const poster = posterTagElement.href
+    if (posterTagElement === null) return null;
 
     const tweetLinkElement = tweet.querySelector('div > div > div > div > div > article > div > div > div:nth-child(3) > div:nth-child(4) > div > div > div > div > a')
-    if (tweetLinkElement === null) { return }
-    const tweetLink = tweetLinkElement.href
+    if (tweetLinkElement === null) return null;
 
-    const tweetTimeElement = tweetLinkElement.querySelector('time')
-    const tweetTime = tweetTimeElement.getAttribute('datetime')
+    const tweetTimeElement = tweetLinkElement.querySelector('time');
 
-    const tweetImages = await getTweetImages(tweet)
+    let tweetImages = await getTweetImages(tweet);
+    let quotePost = null;
+
+    const quotePostElement = tweet.querySelector("div[aria-labelledby] > div[id]");
+    if (quotePostElement) {
+        quotePost = await getQuotePostDetails(quotePostElement);
+        if (quotePost?.images) {
+            tweetImages = tweetImages.filter(tweetImage => !quotePost.images.includes(tweetImage));
+        }
+    }
 
     const output = {
-        poster: poster,
-        link: tweetLink,
-        time: tweetTime,
-        images: tweetImages
+        poster: posterTagElement.href,
+        link: tweetLinkElement.href,
+        time: tweetTimeElement.getAttribute('datetime'),
+        images: tweetImages,
+        quotePost
     }
 
     return output
 }
 
 async function initialTimelineRead(timeline) {
-    tweets = [...timeline.childNodes]
+    const tweets = [...timeline.childNodes]
 
-    const poastDetails = getPoastDetails(tweets.shift())
-    const detailsList = tweets.map(tweet => {
-        return getTweetDetails(tweet)
-    })
+    const poastDetails = await getPoastDetails(tweets.shift())
+    const detailsList = await Promise.all(
+        tweets.map(tweet => { return getTweetDetails(tweet) })
+    )
 
     detailsList.unshift(poastDetails)
-    await sendDetails(detailsList)
+    await Promise.all([
+        sendDetails(detailsList),
+        isCreator ? embedCreatorTweets(detailsList) : Promise.resolve()
+    ])
 }
 
 loadTimeline("Timeline: Conversation").then(async timeline => {
