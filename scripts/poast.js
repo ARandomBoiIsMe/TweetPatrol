@@ -29,7 +29,27 @@ async function getPoastDetails(tweet) {
     return output
 }
 
-async function initialTimelineRead(timeline) {
+async function embedCreatorPoastTweet(poastDetails) {
+    const details = await processTweetDetails([poastDetails]);
+    if (!details.length) return;
+
+    const { Current_X_User } = await chrome.storage.local.get(["Current_X_User"]);
+
+    details
+        .filter(detail => detail.poster.replace('https://x.com/', '') === Current_X_User)
+        .forEach(detail => {
+            const link = document.querySelector(`a[href="${detail.link.replace('https://x.com', '')}"]`);
+            const tweet = link?.closest('.css-175oi2r[data-testid="cellInnerDiv"]');
+
+            if (!tweet || tweet.querySelector('.add-tweet')) return;
+
+            const addTweet = createAddTweetElement(detail);
+            const bookmarkElement = tweet.querySelector('div > div > article > div > div > div:nth-child(3) > div:nth-child(6) > div > div > div:nth-child(4)');
+            bookmarkElement.parentNode.insertBefore(addTweet, bookmarkElement.nextSibling);
+        });
+}
+
+async function initialTimelineRead(timeline, isCreator) {
     const tweets = [...timeline.childNodes]
 
     const poastDetails = await getPoastDetails(tweets.shift())
@@ -40,14 +60,18 @@ async function initialTimelineRead(timeline) {
     detailsList.unshift(poastDetails)
     await Promise.all([
         sendDetails(detailsList),
+        isCreator ? embedCreatorPoastTweet(detailsList.shift()) : Promise.resolve(),
         isCreator ? embedCreatorTweets(detailsList) : Promise.resolve()
     ])
 }
 
 loadTimeline("Timeline: Conversation").then(async timeline => {
     console.log("Poast timeline loaded")
-    await initialTimelineRead(timeline)
-    monitorTimeline(timeline)
+
+    const isCreator = await isUserACreator();
+
+    await initialTimelineRead(timeline, isCreator);
+    monitorTimeline(timeline, isCreator);
 }).catch(error => {
     console.error("Error loading timeline:", error)
 })
