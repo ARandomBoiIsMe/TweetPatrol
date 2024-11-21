@@ -2,6 +2,8 @@ async function getPoastDetails(tweet) {
     const posterTagElement = tweet.querySelector('div[data-testid="User-Name"] > div > div > a')
     if (posterTagElement === null) return null;
 
+    const tweetTextElement = tweet.querySelector('div[data-testid="tweetText"] > span');
+
     const tweetLinkElement = tweet.querySelector('div > div > div > div > div > article > div > div > div:nth-child(3) > div:nth-child(4) > div > div > div > div > a')
     if (tweetLinkElement === null) return null;
 
@@ -20,6 +22,7 @@ async function getPoastDetails(tweet) {
 
     const output = {
         poster: posterTagElement.href,
+        text: tweetTextElement?.textContent,
         link: tweetLinkElement.href,
         time: tweetTimeElement.getAttribute('datetime'),
         images: tweetImages,
@@ -68,7 +71,7 @@ async function initialTimelineRead(timeline, isCreator) {
 loadTimeline("Timeline: Conversation").then(async timeline => {
     const extensionEnabled = await isExtensionEnabled()
     if (!extensionEnabled) return
-    
+
     console.log("Poast timeline loaded")
 
     const isCreator = await isUserACreator();

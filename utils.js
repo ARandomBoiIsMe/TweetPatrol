@@ -108,6 +108,8 @@ async function getQuotePostDetails(quotePost) {
     const posterTagElement = quotePost.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div > div > div> span');
     if (!posterTagElement) return null;
 
+    const tweetTextElement = quotePost.querySelector('div[data-testid="tweetText"] > span');
+
     const tweetLinkElement = quotePost.querySelector('a[role="link"]');
     if (!tweetLinkElement) return null;
 
@@ -116,6 +118,7 @@ async function getQuotePostDetails(quotePost) {
 
     return {
         poster: posterTagElement.textContent.replace("@", "https://x.com/"),
+        text: tweetTextElement?.textContent,
         link: tweetLinkElement.href.replace(/\/photo\/\d+/g, ''),
         time: tweetTimeElement.getAttribute('datetime'),
         images: await getTweetImages(quotePost)
@@ -125,6 +128,8 @@ async function getQuotePostDetails(quotePost) {
 async function getTweetDetails(tweet) {
     const posterTagElement = tweet.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div > a');
     if (!posterTagElement) return null;
+
+    const tweetTextElement = tweet.querySelector('div[data-testid="tweetText"] > span');
 
     const tweetLinkElement = tweet.querySelector('div[data-testid="User-Name"] > div:nth-child(2) > div > div:nth-child(3) > a');
     if (!tweetLinkElement) return null;
@@ -145,6 +150,7 @@ async function getTweetDetails(tweet) {
 
     return {
         poster: posterTagElement.href,
+        text: tweetTextElement?.textContent,
         link: tweetLinkElement.href,
         time: tweetTimeElement.getAttribute('datetime'),
         images: tweetImages,
