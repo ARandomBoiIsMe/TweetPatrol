@@ -66,6 +66,9 @@ async function initialTimelineRead(timeline, isCreator) {
 }
 
 loadTimeline("Timeline: Conversation").then(async timeline => {
+    const extensionEnabled = await isExtensionEnabled()
+    if (!extensionEnabled) return
+    
     console.log("Poast timeline loaded")
 
     const isCreator = await isUserACreator();

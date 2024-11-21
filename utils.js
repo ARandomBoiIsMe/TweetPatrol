@@ -14,6 +14,20 @@ const CONFIG = {
     imageLoadTimeout: 5000
 };
 
+async function isExtensionEnabled() {
+    const { extension } = await chrome.storage.local.get(["extension"]);
+
+    if (extension === undefined || extension === 'off') return false
+    else return true
+}
+
+async function showPopups() {
+    const { popups } = await chrome.storage.local.get(["popups"]);
+
+    if (popups === undefined || popups === 'off') return false
+    else return true
+}
+
 async function isUserACreator() {
     const profile = document.querySelector('a[aria-label="Profile"]');
     if (!profile) return false;
@@ -167,9 +181,9 @@ function createWarningBanner(result) {
     linksContainer.style.gap = '10px';
 
     const originalLink = createLink(result.original_link, 'View original tweet');
-    const dismissLink = createLink('#', 'No, it\'s not', () => handleDismiss(warning, result));
+    // const dismissLink = createLink('#', 'No, it\'s not', () => handleDismiss(warning, result));
 
-    linksContainer.append(originalLink, dismissLink);
+    linksContainer.append(originalLink);
     warning.append(warningText, linksContainer);
 
     return warning;
@@ -248,7 +262,7 @@ function createAddTweetElement(data) {
             });
 
             if (response.ok) {
-                addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check">
+                addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1da1f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M5 12l5 5l10 -10" />
                 </svg>`;
@@ -258,7 +272,7 @@ function createAddTweetElement(data) {
                 return;
             } else {
                 console.error('Request failed', await response.text());
-                addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+                addTweet.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f5222d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M18 6l-12 12" />
                 <path d="M6 6l12 12" />
@@ -312,10 +326,13 @@ async function processTweetDetails(detailsList) {
     return details;
 }
 
-function flagTweets(results) {
-    results
+async function flagTweets(results) {
+    const popupsEnabled = await showPopups()
+    if (!popupsEnabled) return
+
+    const tasks = results
         .filter(result => result.status === 'stolen')
-        .forEach(result => {
+        .map(async result => {
             const link = document.querySelector(`a[href="${result.stolen_link.replace('https://x.com', '')}"]`);
             const tweet = link?.closest('.css-175oi2r[data-testid="cellInnerDiv"]');
 
@@ -326,6 +343,8 @@ function flagTweets(results) {
             const beforeTweetChild = beforeTweet.querySelector('div:nth-child(2)');
             beforeTweet.insertBefore(warning, beforeTweetChild);
         });
+
+    await Promise.all(tasks);
 }
 
 async function sendDetails(detailsList) {
@@ -339,7 +358,7 @@ async function sendDetails(detailsList) {
             body: JSON.stringify(details)
         });
         const data = await response.json();
-        flagTweets(data.results);
+        await flagTweets(data.results);
     } catch (error) {
         console.error("Error sending details:", error);
     }
@@ -381,9 +400,9 @@ async function embedCreatorTweets(detailsList) {
 
     const { Current_X_User } = await chrome.storage.local.get(["Current_X_User"]);
 
-    details
+    const tasks = details
         .filter(detail => detail.poster.replace('https://x.com/', '') === Current_X_User)
-        .forEach(detail => {
+        .map(async detail => {
             const link = document.querySelector(`a[href="${detail.link.replace('https://x.com', '')}"]`);
             const tweet = link?.closest('.css-175oi2r[data-testid="cellInnerDiv"]');
 
@@ -393,4 +412,6 @@ async function embedCreatorTweets(detailsList) {
             const statsElement = tweet.querySelector('div > div > article > div > div > div:nth-child(2) > div:nth-child(2) > div:nth-child(4) > div > div > div:nth-child(4)');
             statsElement.parentNode.insertBefore(addTweet, statsElement.nextSibling);
         });
+
+    await Promise.all(tasks)
 }

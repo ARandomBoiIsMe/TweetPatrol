@@ -15,6 +15,9 @@ async function loadTimeline() {
 }
 
 loadTimeline().then(async timeline => {
+    const extensionEnabled = await isExtensionEnabled()
+    if (!extensionEnabled) return
+    
     console.log("Profile timeline loaded");
 
     const isCreator = await isUserACreator()

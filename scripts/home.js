@@ -1,4 +1,7 @@
 loadTimeline("Timeline: Your Home Timeline").then(async timeline => {
+  const extensionEnabled = await isExtensionEnabled()
+  if (!extensionEnabled) return
+
   console.log("Home timeline loaded");
 
   const isCreator = await isUserACreator();

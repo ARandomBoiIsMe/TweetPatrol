@@ -1,4 +1,7 @@
 loadTimeline("Timeline: Search timeline").then(async timeline => {
+    const extensionEnabled = await isExtensionEnabled()
+    if (!extensionEnabled) return
+    
     console.log("Search timeline loaded");
 
     const isCreator = await isUserACreator()
