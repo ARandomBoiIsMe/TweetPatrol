@@ -4,7 +4,8 @@
     "description": "Protect your content from shameless thieves!",
     "version": "1.0",
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "popup/popup.html",
+        "default_icon": "images/icon.png"
     },
     "background": {
         "service_worker": "background.js"

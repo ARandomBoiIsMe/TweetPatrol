@@ -1,4 +1,4 @@
-const baseURL = "http://localhost:8080/"
+const baseURL = "https://tweetpatrol.cloud/"
 
 const tabs = document.querySelectorAll(".tab")
 const tabButtons = document.querySelectorAll(".tab-buttons button")

@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener(function (msg, _, sendResponse) {
 // ====================================
 
 const CONFIG = {
-    baseURL: "http://localhost:8080/",
+    baseURL: "https://tweetpatrol.cloud/",
     maxTimelineLoadAttempts: 50,
     timelineLoadInterval: 200,
     imageLoadTimeout: 5000
