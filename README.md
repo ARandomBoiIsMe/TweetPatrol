@@ -8,12 +8,13 @@ One month later, and here we are lol.
 
 The extension works like this:
 - Users register images they want to track
+    - Images are added by clicking on a button that will be injected to the X frontend by the extension. This button will only be visible to registered users.
+    ![Add an image](images/addtolibrarywithhover.png)
+    ![Add an image](images/addtolibraryhoverpoast.png)
 - Other extension users simply use X/Twitter as they normally would
-- Any occurence of registered images that have not been posted by the registrar will be flagged as "stolen", with a banner popup on the X frontend and all.
+- Any occurence of registered images that have not been posted by the registrar will be flagged as "stolen", with a banner popup on the X frontend and all. Like this (peep my drawing skills btw):
 
-Like this (peep my drawing skills btw):
-
-![Thief!](images/stolenimage.png)
+    ![Thief!](images/stolenimage.png)
 
 The registrar also sees stolen image matches on their dashboard (I forgot to mention the dashboard), like this:
 
