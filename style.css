@@ -221,6 +221,22 @@ a {
     margin-bottom: 2rem;
 }
 
+.sourcecode {
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(21, 32, 43, 0.95);
+}
+
+.sourcecode h2 {
+    color: #fff;
+    margin-bottom: 1rem;
+}
+
+.sourcecode p {
+    color: var(--secondary-color);
+    margin-bottom: 2rem;
+}
+
 .footer {
     text-align: center;
     padding: 2rem;
