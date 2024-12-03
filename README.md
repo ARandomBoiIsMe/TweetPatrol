@@ -1,3 +1,7 @@
+## Update
+
+Google approved the extension. You can [download it](https://chromewebstore.google.com/detail/tweet-patrol/jkdbpcgpokfgfaekhmjhlbbkfckidgpk?hl=en&authuser=0) from the Chrome Web Store.
+
 ## Quick overview
 
 Basically, I saw this comment under a post about a stolen image repost and decided to embark on this project:
