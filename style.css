@@ -18,80 +18,59 @@ body {
 nav {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Aligns items vertically */
+    align-items: center;
     margin: auto;
-    width: 52%;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .right-links {
     display: flex;
-    gap: 20px; /* Adds space between "contact" and "source" */
+    gap: 15px;
 }
 
 .right-links a {
     text-decoration: underline;
 }
 
-h2,
 h1 {
-    margin: auto;
-    width: 50%;
-    padding: 10px;
-    text-align: center;
-}
-
-h1 {
-    white-space: nowrap; /* Prevents "Tweet Patrol" from breaking onto two lines */
-    margin: 0; /* Ensures no default margin pushes it */
     font-size: 1.5rem;
+    margin: 0;
+    white-space: nowrap;
 }
 
 h2 {
-    width: 50%;
-    margin-bottom: 25px;
+    width: 90%;
+    margin: 15px auto;
+    padding: 0 10px;
+    text-align: center;
     border-bottom: 1px var(--primary-color) dashed;
 }
 
-h3 {
-    font-weight: normal;
-}
-
-.red {
-    color: var(--bad-color);
-}
-
-.blue {
-    color: var(--primary-color);
-}
-
 #content {
-    padding: 8px;
+    width: 90%;
     margin: auto;
-    width: 50%;
     padding: 10px;
     text-align: left;
 }
 
 .tabs {
+    width: 90%;
+    margin: 15px auto;
     display: flex;
-    padding: 8px;
-    border-radius: 8px;
-    background-color: transparent;
-    margin: auto;
-    width: 50%;
     padding: 10px;
-    text-align: center;
+    background-color: transparent;
 }
 
 .tabs button {
     flex: 1;
-    padding: 8px 16px;
+    padding: 10px;
     border: none;
     cursor: pointer;
     background-color: transparent;
     border-radius: 4px;
-    margin: 0 4px;
-    font-size: 14px;
+    font-size: 16px;
     color: #8899a6;
     transition: all 0.2s ease;
 }
@@ -103,7 +82,7 @@ h3 {
 
 .tab {
     display: none;
-    padding: 16px 0;
+    padding: 10px;
 }
 
 .tab.active {
@@ -113,35 +92,24 @@ h3 {
 .card {
     border: 2px var(--secondary-color) solid;
     border-radius: 5px;
-    margin: auto;
-    margin-top: 20px;
-    width: 100%;
-    padding: 15px;
+    margin: 20px auto;
+    width: 90%;
     max-width: 600px;
-    align-items: center;
+    padding: 15px;
+    box-sizing: border-box;
 }
 
 .card-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    justify-content: left;
-    margin-bottom: 16px;
-}
-
-.card-header h2 {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 0;
-    color: white;
-    text-align: left;
-    white-space: nowrap;
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
 .card-number {
     background-color: var(--primary-color);
     color: white;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
     width: 40px;
     height: 40px;
@@ -149,16 +117,26 @@ h3 {
     justify-content: center;
     align-items: center;
     border-radius: 50%;
-    margin-bottom: 16px;
+}
+
+.card-header h2 {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    color: white;
+    text-align: left;
+    width: auto;
+    border: none;
+    border-bottom: 1px var(--primary-color) dashed;
 }
 
 .card p {
-    padding: 20px;
+    padding: 10px;
 }
 
 .card img {
     display: block;
-    width: 100%;
+    max-width: 100%;
     height: auto;
 }
 
@@ -169,41 +147,17 @@ a {
     transition: color 0.3s ease;
 }
 
-.contact {
-    text-align: center;
-    padding: 1rem 1rem;
-    background-color: rgba(21, 32, 43, 0.95);
+.red {
+    color: var(--bad-color);
 }
 
-.contact h2 {
-    color: #fff;
-    margin-bottom: 1rem;
-}
-
-.contact p {
-    color: var(--secondary-color);
-    margin-bottom: 2rem;
-}
-
-.sourcecode {
-    text-align: center;
-    padding: 1rem 1rem;
-    background-color: rgba(21, 32, 43, 0.95);
-}
-
-.sourcecode h2 {
-    color: #fff;
-    margin-bottom: 1rem;
-}
-
-.sourcecode p {
-    color: var(--secondary-color);
-    margin-bottom: 2rem;
+.blue {
+    color: var(--primary-color);
 }
 
 .footer {
     text-align: center;
-    padding: 2rem;
+    padding: 1rem;
     color: var(--footer-color);
     font-size: 0.9rem;
 }
@@ -211,4 +165,37 @@ a {
 .footer a {
     color: var(--primary-color);
     text-decoration: none;
+}
+
+@media screen and (min-width: 768px) {
+
+    nav,
+    h2,
+    #content,
+    .tabs,
+    .card {
+        width: 53%;
+    }
+
+    h2 {
+        padding: 10px;
+    }
+
+    .card-header h2 {
+        font-size: 18px;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    body {
+        font-size: 16px;
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    .right-links a {
+        font-size: 0.9rem;
+    }
 }
