@@ -5,78 +5,190 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Protect your creative work on X / Twitter with Tweet Patrol - the ultimate browser extension for image tracking and copyright defense.">
+        content="Protect your creative work on X / Twitter with Tweet Patrol - the X browser extension for image tracking and content defense.">
     <meta name="keywords"
         content="Image protection, content theft prevention, X, Twitter, creator rights, browser extension">
-    <meta name="author" content="Tweet Patrol">
+    <meta name="author" content="ARandomBoiIsMe">
     <title>Tweet Patrol - Protect Your Images on X</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <nav class="nav">
-        <div class="nav-brand">Tweet Patrol</div>
-        <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#features">Features</a>
-            <a href="https://x.com/arandomboiisme" target="_blank">Contact</a>
-        </div>
-        <button class="hamburger" aria-label="Toggle navigation">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
-    </nav>
-    <section class="hero">
-        <div class="container">
-            <div class="left-content">
-                <h1>Defend Your Content on 𝕏 / Twitter</h1>
-                <p>Take back control over who posts your creative work, and get the credits you deserve.</p>
-                <a href="https://chromewebstore.google.com/detail/tweet-patrol/jkdbpcgpokfgfaekhmjhlbbkfckidgpk?hl=en&authuser=0"
-                    class="cta-button" target="_blank">Protect My Images</a>
+    <a href="#">
+        <h1>Tweet Patrol</h1>
+    </a>
+
+    <h2>Protecting content on X / Twitter</h2>
+
+    <div id="content">
+        <h3>Are you tired of seeing others <span class="red">take credit</span> for your content?</h3>
+        <h3>Do you want to <span class="blue">help creators</span> by quietly notifying them of stolen work?</h3>
+        <h3>Or maybe you're just looking to <span class="blue">verify</span> that the stunning art you found is actually owned by the person who
+            posted it?</h3>
+        <h3>No matter your reason, Tweet Patrol is here to help!</h3>
+
+        <h3><a href="https://chromewebstore.google.com/detail/tweet-patrol/jkdbpcgpokfgfaekhmjhlbbkfckidgpk?authuser=0&hl=en">Download it here!</a></h3>
+    </div>
+
+    <div class="tabs">
+        <button id="creator" class="active">Creator</button>
+        <button id="general">General</button>
+    </div>
+
+    <div id="creator-tuts" class="tab active">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">1</div>
+                <h2>Access your creator dashboard</h2>
             </div>
-            <div class="right-content">
-                <img src="addtolibrarywithhover.png" alt="Tweet Patrol Showcase">
-            </div>
+
+            <p>From the extension page, navigate to the Creator section and click the button on the page.</p>
+
+            <img src="images/creatordashboard.png">
         </div>
 
-        <div class="container">
-            <div class="left-content">
-                <img src="stolenimage.png" alt="Tweet Patrol Showcase">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">2</div>
+                <h2>Login with your X / Twitter account</h2>
             </div>
-            <div class="right-content">
-                <h1>Help other creators</h1>
-                <p>Empower other content creators by looking out for their work.</p>
-                <a href="https://chromewebstore.google.com/detail/tweet-patrol/jkdbpcgpokfgfaekhmjhlbbkfckidgpk?hl=en&authuser=0"
-                    class="cta-button" target="_blank">Protect Their Images</a>
-            </div>
-        </div>
-    </section>
 
-    <section class="features" id="features">
-        <div class="features-grid">
-            <div class="feature-card">
-                <h3>Collaborative Defense</h3>
-                <p>Mobilize your community to identify and combat image theft, creating a proactive shield for your work.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Instant Intervention</h3>
-                <p>Receive alerts when your images are detected elsewhere.</p>
-            </div>
+            <p>Clicking the button as described will take you to a new tab, where you will be prompted to login with
+                your X
+                / Twitter account.</p>
+
+            <img src="images/loginscreen.png">
         </div>
-    </section>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">3</div>
+                <h2>Wait for your account to be reviewed</h2>
+            </div>
+
+            <p>On your very first login, your account will be under review for a period of time. This process shouldn't
+                take a noticeable amount of time.</p>
+
+            <img src="images/accountunderreview.png">
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">4</div>
+                <h2>View your dashboard</h2>
+            </div>
+
+            <p>After you pass the account review, you will be given access to your dashboard, which will be empty at
+                this stage. This is where you can view your added images and any potential unauthorized reposts from
+                other users.</p>
+
+            <img src="images/emptydashboard.png">
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">5</div>
+                <h2>Add images to your dashboard</h2>
+            </div>
+
+            <p>After successfully passing the account review, you'll be able to add images to your dashboard directly
+                from your X / Twitter page.</p>
+            <p>To do this, navigate to your profile page on X / Twitter, where all your image posts will have a <img
+                    src="images/addbutton.png"
+                    style="width: 20px; height: 20px; vertical-align: text-bottom; display: inline;"> button attached to
+                them.</p>
+
+            <img src="images/addtolibrarywithhover.png">
+            <img src="images/addtolibraryhoverpoast.png">
+
+            <p>Clicking this button will add all images from that tweet to your image library, allowing them to be
+                identified by other extension users.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">6</div>
+                <h2>Checking for image matches</h2>
+            </div>
+
+            <p>On your dashboard, you can check for matches to your uploaded images. These matches signify that your
+                image has been posted by another account.</p>
+            <p>You can also view the tweet and the account that created it.</p>
+
+            <img src="images/matchesindashboard.png">
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">7</div>
+                <h2>Help other creators!</h2>
+            </div>
+
+            <p>Now you've seen how to upload your images to be tracked. But how do you help other creators? Check out
+                the General section to find out!</p>
+        </div>
+    </div>
+
+    <div id="general-tuts" class="tab">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">1</div>
+                <h2>Ensure the extension is enabled</h2>
+            </div>
+
+            <p>On the extension page, ensure the switch for Extension Enabled is toggled to its active state.</p>
+
+            <img src="images/extensionenabled.png">
+
+            <p>You can also toggle the Popups switch depending on your preference.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">2</div>
+                <h2>Use X / Twitter</h2>
+            </div>
+
+            <p>Simply use the site as you normally would - scrolling, liking, replyguy-ing, LARPing (I won't judge), and
+                the extension will send all images you encounter for processing.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">3</div>
+                <h2>See when an image has been stolen</h2>
+            </div>
+
+            <p>When a creator's uploaded image has been found on another account, you will see a flag notifying you of
+                such.</p>
+
+            <img src="images/stolenimage.png">
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-number">4</div>
+                <h2>Protect your images!</h2>
+            </div>
+
+            <p>Now you've seen how to look out for the creators on the platform, but wouldn't it be nice if people could
+                look out for you as well? Maybe it's a little sketch you posted some years ago, a masterpiece of a photo
+                you
+                took, or even just your friend's biology notes. Whatever it is, you can protect it all the same!</p>
+            <p>Check out the Creator section to find out how!</p>
+        </div>
+    </div>
 
     <section class="contact" id="contact">
         <h2>Need Support?</h2>
-        <p>Questions, concerns, or suggestions? <a href="https://x.com/arandomboiisme" target="_blank">Connect with me
-                directly</a>.</p>
+        <p>Questions, concerns, or suggestions? <a href="https://x.com/arandomboiisme" target="_blank">Reach out to me
+                on X</a>.</p>
     </section>
 
     <section class="sourcecode" id="sourcecode">
         <h2>Source Code</h2>
         <p>Check out the code on <a href="https://github.com/ARandomBoiIsMe/tweetpatrol" target="_blank">GitHub</a>.</p>
     </section>
-
 
     <footer class="footer">
         <p>&copy; 2024 Tweet Patrol. Made with ♥ by <a href="https://x.com/arandomboiisme">@arandomboiisme</a>

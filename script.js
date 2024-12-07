@@ -1,16 +1,13 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
+const tabs = document.querySelectorAll(".tab");
+const tabButtons = document.querySelectorAll(".tabs button");
 
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navLinks.classList.toggle('active');
-    });
+tabButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        tabButtons.forEach(btn => btn.classList.remove("active"));
+        tabs.forEach(tab => tab.classList.remove("active"));
 
-    navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            hamburger.classList.remove('active');
-            navLinks.classList.remove('active');
-        });
+        button.classList.add("active");
+        const targetTab = document.getElementById(button.id + "-tuts");
+        targetTab.classList.add("active");
     });
 });
