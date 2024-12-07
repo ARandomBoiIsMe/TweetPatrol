@@ -28,6 +28,10 @@ nav {
     gap: 20px; /* Adds space between "contact" and "source" */
 }
 
+.right-links a {
+    text-decoration: underline;
+}
+
 h2,
 h1 {
     margin: auto;
