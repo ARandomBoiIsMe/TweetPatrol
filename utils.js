@@ -65,12 +65,29 @@ async function loadTimeline(timelineLabel) {
 
     while (!timeline && attempts < CONFIG.maxTimelineLoadAttempts) {
         timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`);
+
+        if (timeline && timeline.childNodes.length > 0) {
+            const post = timeline.querySelector('[data-testid="cellInnerDiv"]');
+            if (post) {
+                await new Promise(r => setTimeout(r, 1000));
+                return timeline;
+            }
+        }
+
         attempts++;
         await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
     }
 
     if (!timeline) {
         throw new Error(`Timeline not found - ${timelineLabel}`);
+    }
+
+    const progressbar = timeline.querySelector('[role="progressbar"]')
+    if (progressbar) {
+        await new Promise(r => setTimeout(r, 1000));
+        timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`);
+    } else {
+        await new Promise(r => setTimeout(r, 1000));
     }
 
     return timeline;
@@ -397,7 +414,7 @@ function monitorTimeline(timeline, isCreator) {
         })().catch(console.error);
     });
 
-    observer.observe(timeline, { childList: true, subtree: true });
+    observer.observe(timeline, { childList: true });
 }
 
 async function embedCreatorTweets(detailsList) {

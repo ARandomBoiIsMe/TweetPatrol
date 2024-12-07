@@ -5,13 +5,32 @@ async function loadTimeline() {
 
     while (timeline === null && attempts < maxAttempts) {
         timeline = document.querySelector('[aria-label^="Timeline:"] > div')
-        attempts++
-        await new Promise(r => setTimeout(r, 200))
+
+        if (timeline && timeline.childNodes.length > 0) {
+            const post = timeline.querySelector('[data-testid="cellInnerDiv"]');
+            if (post) {
+                await new Promise(r => setTimeout(r, 1000));
+                return timeline;
+            }
+        }
+
+        attempts++;
+        await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
     }
 
-    if (timeline === null) { throw new Error(`Timeline not found - Profile timeline`) }
+    if (!timeline) {
+        throw new Error(`Timeline not found - ${timelineLabel}`);
+    }
 
-    return timeline
+    const progressbar = timeline.querySelector('[role="progressbar"]')
+    if (progressbar) {
+        await new Promise(r => setTimeout(r, 1000));
+        timeline = document.querySelector('[aria-label^="Timeline:"] > div')
+    } else {
+        await new Promise(r => setTimeout(r, 1000));
+    }
+
+    return timeline;
 }
 
 loadTimeline().then(async timeline => {
