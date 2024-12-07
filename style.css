@@ -15,6 +15,19 @@ body {
     line-height: 1.6;
 }
 
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Aligns items vertically */
+    margin: auto;
+    width: 52%;
+}
+
+.right-links {
+    display: flex;
+    gap: 20px; /* Adds space between "contact" and "source" */
+}
+
 h2,
 h1 {
     margin: auto;
@@ -23,8 +36,14 @@ h1 {
     text-align: center;
 }
 
+h1 {
+    white-space: nowrap; /* Prevents "Tweet Patrol" from breaking onto two lines */
+    margin: 0; /* Ensures no default margin pushes it */
+    font-size: 1.5rem;
+}
+
 h2 {
-    width: 30%;
+    width: 50%;
     margin-bottom: 25px;
     border-bottom: 1px var(--primary-color) dashed;
 }
@@ -46,7 +65,7 @@ h3 {
     margin: auto;
     width: 50%;
     padding: 10px;
-    text-align: center;
+    text-align: left;
 }
 
 .tabs {
@@ -102,7 +121,7 @@ h3 {
     display: flex;
     align-items: center;
     gap: 16px;
-    justify-content: center;
+    justify-content: left;
     margin-bottom: 16px;
 }
 
@@ -112,6 +131,7 @@ h3 {
     margin: 0;
     color: white;
     text-align: left;
+    white-space: nowrap;
 }
 
 .card-number {
