@@ -1,42 +1,43 @@
 async function loadTimeline() {
-    let timeline = null
-    let attempts = 0
-    let maxAttempts = 50
+    let timeline = null;
+    let attempts = 0;
 
-    while (timeline === null && attempts < maxAttempts) {
+    while (!timeline && attempts < CONFIG.maxTimelineLoadAttempts) {
         timeline = document.querySelector('[aria-label^="Timeline:"] > div')
-
-        if (timeline && timeline.childNodes.length > 0) {
-            const post = timeline.querySelector('[data-testid="cellInnerDiv"]');
-            if (post) {
-                await new Promise(r => setTimeout(r, 1000));
-                return timeline;
-            }
-        }
-
         attempts++;
         await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
     }
 
     if (!timeline) {
-        throw new Error(`Timeline not found - ${timelineLabel}`);
+        throw new Error(`Timeline not found - Profile timeline`);
     }
 
-    const progressbar = timeline.querySelector('[role="progressbar"]')
-    if (progressbar) {
-        await new Promise(r => setTimeout(r, 1000));
-        timeline = document.querySelector('[aria-label^="Timeline:"] > div')
-    } else {
-        await new Promise(r => setTimeout(r, 1000));
+    for (let postAttempts = 0; postAttempts < CONFIG.maxTimelineLoadAttempts; postAttempts++) {
+        const post = timeline.querySelector('[data-testid="cellInnerDiv"]');
+
+        if (post) {
+            await new Promise(r => setTimeout(r, CONFIG.timelinePopulationWaitTime));
+            timeline = document.querySelector('[aria-label^="Timeline:"] > div')
+            return timeline;
+        }
+
+        const progressbar = timeline.querySelector('[role="progressbar"]');
+        if (progressbar) {
+            await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
+            timeline = document.querySelector('[aria-label^="Timeline:"] > div')
+            continue;
+        }
+
+        await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
     }
 
-    return timeline;
+    throw new Error(`No posts found in timeline - Profile timeline`);
 }
 
 loadTimeline().then(async timeline => {
     const extensionEnabled = await isExtensionEnabled()
     if (!extensionEnabled) return
-    
+
     console.log("Profile timeline loaded");
 
     const isCreator = await isUserACreator()

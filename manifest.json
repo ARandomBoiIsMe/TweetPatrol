@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Tweet Patrol",
     "description": "Protect your content on X/Twitter from shameless thieves!",
-    "version": "1.0",
+    "version": "1.0.2",
     "action": {
         "default_popup": "popup/popup.html"
     },

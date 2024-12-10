@@ -7,12 +7,15 @@ chrome.runtime.onMessage.addListener(function (msg, _, sendResponse) {
 });
 // ====================================
 
-const CONFIG = {
-    baseURL: "https://tweetpatrol.cloud/",
-    maxTimelineLoadAttempts: 50,
-    timelineLoadInterval: 200,
-    imageLoadTimeout: 5000
-};
+if (typeof CONFIG === "undefined") {
+    var CONFIG = {
+        baseURL: "https://tweetpatrol.cloud/",
+        maxTimelineLoadAttempts: 50,
+        timelineLoadInterval: 200,
+        timelinePopulationWaitTime: 500,
+        imageLoadTimeout: 5000
+    };
+}
 
 async function isExtensionEnabled() {
     const { extension } = await chrome.storage.local.get(["extension"]);
@@ -65,15 +68,6 @@ async function loadTimeline(timelineLabel) {
 
     while (!timeline && attempts < CONFIG.maxTimelineLoadAttempts) {
         timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`);
-
-        if (timeline && timeline.childNodes.length > 0) {
-            const post = timeline.querySelector('[data-testid="cellInnerDiv"]');
-            if (post) {
-                await new Promise(r => setTimeout(r, 1000));
-                return timeline;
-            }
-        }
-
         attempts++;
         await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
     }
@@ -82,15 +76,26 @@ async function loadTimeline(timelineLabel) {
         throw new Error(`Timeline not found - ${timelineLabel}`);
     }
 
-    const progressbar = timeline.querySelector('[role="progressbar"]')
-    if (progressbar) {
-        await new Promise(r => setTimeout(r, 1000));
-        timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`);
-    } else {
-        await new Promise(r => setTimeout(r, 1000));
+    for (let postAttempts = 0; postAttempts < CONFIG.maxTimelineLoadAttempts; postAttempts++) {
+        const post = timeline.querySelector('[data-testid="cellInnerDiv"]');
+
+        if (post) {
+            await new Promise(r => setTimeout(r, CONFIG.timelinePopulationWaitTime));
+            timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`);
+            return timeline;
+        }
+
+        const progressbar = timeline.querySelector('[role="progressbar"]');
+        if (progressbar) {
+            await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
+            timeline = document.querySelector(`[aria-label="${timelineLabel}"] > div`);
+            continue;
+        }
+
+        await new Promise(r => setTimeout(r, CONFIG.timelineLoadInterval));
     }
 
-    return timeline;
+    throw new Error(`No posts found in timeline - ${timelineLabel}`);
 }
 
 function getTweetImages(tweet) {
